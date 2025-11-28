@@ -78,36 +78,6 @@
     (setq woman-manpath path)))
 
 
-;;;###package tramp
-(unless (featurep :system 'windows)
-  (setq tramp-default-method "ssh")) ; faster than the default scp
-
-
-;;;###package whitespace
-(add-hook! 'after-change-major-mode-hook :append
-  (defun +emacs-highlight-non-default-indentation-h ()
-    "Highlight whitespace at odds with `indent-tabs-mode'.
-That is, highlight tabs if `indent-tabs-mode' is `nil', and highlight spaces at
-the beginnings of lines if `indent-tabs-mode' is `t'. The purpose is to make
-incorrect indentation in the current buffer obvious to you.
-
-Does nothing if `whitespace-mode' or `global-whitespace-mode' is already active
-or if the current buffer is read-only or not file-visiting."
-    (unless (or (eq major-mode 'fundamental-mode)
-                (bound-and-true-p global-whitespace-mode)
-                (null buffer-file-name)
-                buffer-read-only)
-      (require 'whitespace)
-      (set (make-local-variable 'whitespace-style)
-           (cl-union (if indent-tabs-mode
-                         '(indentation)
-                       '(tabs tab-mark))
-                     (when whitespace-mode
-                       (remq 'face whitespace-active-style))))
-      (cl-pushnew 'face whitespace-style) ; must be first
-      (whitespace-mode +1))))
-
-
 ;;
 ;;; Smartparens config
 
@@ -354,8 +324,8 @@ Continues comments if executed from a commented line."
         "s-c" (if (featurep 'evil) #'evil-yank #'copy-region-as-kill)
         "s-v" #'yank
         "s-s" #'save-buffer
-        "s-x" #'execute-extended-command
-        :v "s-x" #'kill-region
+        "s-x" (cmds! (doom-region-active-p) #'kill-region
+                     #'execute-extended-command)
         "s-0" #'doom/reset-font-size
         ;; Global font scaling
         "s-=" #'doom/increase-font-size
@@ -520,7 +490,9 @@ Continues comments if executed from a commented line."
            :filter ,(lambda (cmd)
                       (pcase +corfu-want-ret-to-confirm
                         ('nil (corfu-quit) nil)
-                        ('t (if (>= corfu--index 0) cmd))
+                        ('t (if (or (>= corfu--index 0)
+                                    (and prefix-arg (bound-and-true-p corfu-indexed-mode)))
+                                cmd))
                         ('both (funcall-interactively cmd) nil)
                         ('minibuffer
                          (if (minibufferp nil t)

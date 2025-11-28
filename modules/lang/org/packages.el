@@ -89,28 +89,17 @@
   (package! org-appear :pin "32ee50f8fdfa449bbc235617549c1bccb503cb09"))
 (when (modulep! +present)
   (package! centered-window
-    :recipe (:host github :repo "emacsmirror/centered-window")
-    :pin "80965f6c6afe8d918481433984b493de72af5399")
+    :recipe (:host github :repo "nullvec/centered-window-mode")
+    :pin "701f56cd1d2b68352d29914f05ca1b0037bb2595")
   (package! org-tree-slide :pin "e2599a106a26ce5511095e23df4ea04be6687a8a")
   (package! org-re-reveal :pin "4eb0f7147447c956231f5c178fa454b7cb76741b")
   (package! revealjs
     :recipe (:host github :repo "hakimel/reveal.js"
              :files ("css" "dist" "js" "plugin"))
     :pin "4cf184924d59e3d2b6552190c740ea5c7ab07981"))
-(cond
- ((modulep! +roam)
-  (package! org-roam
-    :recipe (:host github :repo "org-roam/org-roam-v1")
-    :pin "946a879a4a18756a0508afba1e0b0fe070c6a8b4"))
- ((modulep! +roam2)
-  (package! org-roam
-    ;; FIXME A :recipe isn't strictly necessary, but without it, our package
-    ;;       bumper fails to distinguish between org-roam v1 and v2.
-    :recipe (:host github :repo "org-roam/org-roam")
-    :pin "89dfaef38b6caa3027f20f96a551dc8f194ac533")
-  (when (< emacs-major-version 29)
-    ;; HACK: Needed until org-roam/org-roam#2485 is resolved.
-    (package! emacsql :pin "491105a01f58bf0b346cbc0254766c6800b229a2"))))
+(when (or (modulep! +roam)
+          (modulep! +roam2))
+  (package! org-roam :pin "89dfaef38b6caa3027f20f96a551dc8f194ac533"))
 
 ;;; Babel
 (package! ob-async :pin "9aac486073f5c356ada20e716571be33a350a982")
